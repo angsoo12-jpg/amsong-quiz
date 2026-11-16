@@ -85,12 +85,6 @@ header p{margin:2px 0 0; color:var(--muted); font-size:14px}
 .shake{animation:shake .35s}
 @keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 
-.match-refs{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px}
-.match-ref{font-family:Jua; font-size:17px; padding:8px 14px; border-radius:12px; background:var(--paper); border:2px solid var(--line)}
-.match-ref.sel{background:var(--accent); border-color:var(--main)}
-.match-ref.done, .match-txt.done{background:var(--ok-soft); border-color:var(--ok); opacity:.55; pointer-events:none}
-.match-txt{display:block; width:100%; text-align:left; background:var(--paper); border:2px solid var(--line); border-radius:14px; padding:10px 14px; font-size:15.5px; margin-bottom:8px; word-break:keep-all}
-.match-txt .got{font-family:Jua; color:var(--ok); margin-right:6px}
 
 .flash{min-height:220px; display:flex; flex-direction:column; justify-content:center; text-align:center}
 .flash .verse{text-align:center}
@@ -260,7 +254,7 @@ function myRecord(){
     <div class="label">📅 지난 퀴즈</div>
     <div class="card list">
       ${hist.length ? hist.slice(0, 30).map(h => `<div class="item"><span class="r">${modeName(h.mode)}</span> <span style="font-size:14px; color:var(--muted)">${d(h.t)}</span>
-        <span style="float:right"><b>${h.mode === 'match' ? `틀림 ${h.total - h.score}번` : `${h.score} / ${h.total}`}</b></span>
+        <span style="float:right"><b>${h.score} / ${h.total}</b></span>
         ${h.miss.length ? `<div style="font-size:14px; color:var(--muted)">틀린 구절: ${h.miss.map(n => VERSES[n - 1].ref).join(', ')}</div>` : ''}</div>`).join('')
         : '<p class="prompt" style="margin:0">아직 푼 퀴즈가 없어요.</p>'}
     </div>`;
@@ -295,7 +289,6 @@ const MODES = [
   { id: 'flash', ic: '📖', name: '암송 카드', desc: '가리고 외워 보기 · 첫 글자 힌트' },
   { id: 'blank', ic: '✏️', name: '빈칸 채우기', desc: '빠진 낱말을 골라 넣기' },
   { id: 'mcq',   ic: '🔤', name: '4지선다', desc: '말씀 ↔ 성경 장절 고르기' },
-  { id: 'match', ic: '🧩', name: '짝 맞추기', desc: '장절과 말씀을 짝지어 연결' },
   { id: 'order', ic: '🔀', name: '순서 맞추기', desc: '섞인 말씀 조각을 순서대로' },
 ];
 
@@ -365,7 +358,6 @@ function start(mode){
   const p = pool();
   if (!p.length) return;
   if (mode === 'flash') return flash(p);
-  if (mode === 'match') return matchGame(p);
   G = { mode, qs: shuffle(p).slice(0, Math.min(ROUND, p.length)), i: 0, score: 0, streak: 0, misses: [] };
   if (G.qs.length < ROUND && p.length < ROUND) { /* 범위가 작으면 그대로 */ }
   question();
@@ -509,50 +501,6 @@ function qOrder(v){
       missed++; b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
     }
   });
-}
-
-/* 짝 맞추기 */
-function matchGame(p){
-  const items = shuffle(p.length >= 4 ? p : [...p, ...shuffle(list.filter(x => !p.includes(x)))]).slice(0, 5);
-  let sel = null, done = 0, misses = 0; const missSet = new Set();
-  const refs = shuffle(items), txts = shuffle(items);
-  $app.innerHTML = `
-    <div class="top"><button class="back" id="back">← 처음</button><div class="bar"><i id="mbar" style="width:0"></i></div><div class="score" id="msc">❌ 0</div></div>
-    <div class="card">
-      <p class="prompt">① 위의 성경 장절을 누르고 ② 알맞은 말씀을 눌러 짝을 지어요.</p>
-      <div class="match-refs">${refs.map(v => `<button class="match-ref" data-n="${v.n}">${v.ref}</button>`).join('')}</div>
-      ${txts.map(v => `<button class="match-txt" data-n="${v.n}">${v.text}</button>`).join('')}
-      <div class="feedback" id="fb"></div>
-      <div class="row" id="mnext" style="display:none"><button class="next ghost" id="again">한 판 더</button><button class="next" id="home2">처음으로</button></div>
-    </div>`;
-  document.getElementById('back').onclick = home;
-  const refBtns = $app.querySelectorAll('.match-ref');
-  refBtns.forEach(b => b.onclick = () => { refBtns.forEach(x => x.classList.remove('sel')); b.classList.add('sel'); sel = +b.dataset.n; });
-  $app.querySelectorAll('.match-txt').forEach(b => b.onclick = () => {
-    if (sel == null){ refBtns.forEach(x => { x.classList.remove('shake'); void x.offsetWidth; if (!x.classList.contains('done')) x.classList.add('shake'); }); return; }
-    const v = items.find(x => x.n === sel);
-    if (+b.dataset.n === sel){
-      const r = $app.querySelector(`.match-ref[data-n="${sel}"]`);
-      r.classList.remove('sel'); r.classList.add('done'); b.classList.add('done');
-      b.innerHTML = `<span class="got">${v.ref}</span>${v.text}`;
-      record(v, !missSet.has(v.n)); sel = null; done++;
-      document.getElementById('mbar').style.width = done / items.length * 100 + '%';
-      if (done === items.length){
-        logRound('match', items.length - missSet.size, items.length, items.filter(x => missSet.has(x.n)));
-        const fb = document.getElementById('fb');
-        fb.className = 'feedback show ' + (misses ? 'ng' : 'ok');
-        fb.innerHTML = `<b>${misses ? `완성! 틀린 횟수 ${misses}번` : '완벽해요! 한 번도 안 틀렸어요 🎉'}</b>`;
-        document.getElementById('mnext').style.display = 'flex';
-        document.getElementById('again').onclick = () => matchGame(p);
-        document.getElementById('home2').onclick = home;
-      }
-    } else {
-      misses++; missSet.add(sel); wrong[sel] = true; save();
-      document.getElementById('msc').textContent = '❌ ' + misses;
-      b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
-    }
-  });
-  window.scrollTo(0, 0);
 }
 
 /* 암송 카드 */
