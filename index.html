@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>암송구절 퀴즈</title>
+<meta name="description" content="TJCKIDS 북부연합 암송찬양한마당 기본신앙 암송구절 복습 퀴즈 (고학년·저학년)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f1e7; --paper:#fffdf8; --ink:#2f2419; --muted:#7a6a58; --line:#e3d8c6;
+  --main:#5a3a1a; --main-soft:#efe4d2; --accent:#ffe066;
+  --ok:#2f9e44; --ok-soft:#d3f9d8; --ng:#e03131; --ng-soft:#ffe3e3;
+  --shadow:0 2px 0 rgba(0,0,0,.08), 0 6px 18px rgba(60,40,20,.08);
+}
+body.low{ --bg:#eef0f8; --paper:#ffffff; --ink:#1d2340; --muted:#5f6688; --line:#d6daea; --main:#22306b; --main-soft:#e0e5f6; }
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg); color:var(--ink); font-family:"Gowun Dodum",system-ui,sans-serif; font-size:17px; line-height:1.6; min-height:100vh; transition:background .3s}
+button{font:inherit; color:inherit; cursor:pointer; border:0; background:none}
+.wrap{max-width:760px; margin:0 auto; padding:16px 16px 48px}
+h1,h2,h3,.jua{font-family:"Jua",sans-serif; font-weight:400; letter-spacing:-.01em}
+
+/* header */
+header{display:flex; align-items:center; gap:12px; margin:8px 0 18px}
+.logo{width:52px; height:60px; border-radius:6px 10px 10px 6px; background:var(--main); color:#fff; display:grid; place-items:center; font-family:Jua; font-size:13px; box-shadow:inset 6px 0 0 rgba(0,0,0,.25), var(--shadow); flex:none}
+header h1{margin:0; font-size:clamp(20px,5vw,28px); line-height:1.2}
+header p{margin:2px 0 0; color:var(--muted); font-size:14px}
+
+.grade{display:grid; grid-template-columns:1fr 1fr; gap:6px; background:var(--paper); padding:6px; border-radius:16px; box-shadow:var(--shadow); margin-bottom:14px}
+.grade button{padding:10px; border-radius:12px; font-family:Jua; font-size:18px; color:var(--muted)}
+.grade button.on{background:var(--main); color:#fff}
+.grade small{font-family:"Gowun Dodum"; font-size:13px; opacity:.8; margin-left:4px}
+
+.card{background:var(--paper); border-radius:18px; box-shadow:var(--shadow); padding:18px}
+.label{font-size:13px; color:var(--muted); margin:18px 4px 8px; font-weight:700}
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chip{padding:6px 12px; border-radius:999px; background:var(--paper); border:1.5px solid var(--line); font-size:15px}
+.chip.on{background:var(--main); border-color:var(--main); color:#fff}
+.chip .n{opacity:.7; font-size:12px; margin-left:3px}
+
+.modes{display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px}
+.mode{background:var(--paper); border-radius:18px; padding:16px 14px; text-align:left; box-shadow:var(--shadow); border:2px solid transparent; transition:transform .1s, border-color .1s}
+.mode:hover{border-color:var(--main); transform:translateY(-2px)}
+.mode .ic{font-size:28px; line-height:1}
+.mode h3{margin:8px 0 2px; font-size:19px}
+.mode p{margin:0; font-size:13px; color:var(--muted); line-height:1.45}
+
+.progress{display:flex; align-items:center; gap:10px; font-size:14px; color:var(--muted)}
+.bar{flex:1; height:10px; background:var(--main-soft); border-radius:99px; overflow:hidden}
+.bar i{display:block; height:100%; background:var(--main); border-radius:99px; transition:width .3s}
+
+/* game */
+.top{display:flex; align-items:center; gap:10px; margin-bottom:12px}
+.back{padding:8px 12px; border-radius:12px; background:var(--paper); box-shadow:var(--shadow); font-size:15px}
+.top .bar{height:12px}
+.score{font-family:Jua; font-size:18px; min-width:64px; text-align:right}
+.qhead{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:14px; color:var(--muted)}
+.tag{display:inline-block; padding:2px 10px; border-radius:99px; background:var(--main-soft); color:var(--main); font-size:13px; font-weight:700}
+.prompt{font-size:14px; color:var(--muted); margin:0 0 10px}
+.verse{font-size:clamp(18px,4.4vw,22px); line-height:1.85; word-break:keep-all; margin:4px 0 4px}
+.ref{font-family:Jua; font-size:clamp(24px,6vw,32px); color:var(--main); margin:4px 0}
+.opts{display:grid; gap:8px; margin-top:16px}
+.opts.two{grid-template-columns:1fr 1fr}
+.opt{background:var(--paper); border:2px solid var(--line); border-radius:14px; padding:12px 14px; text-align:left; font-size:17px; word-break:keep-all; transition:background .15s, border-color .15s}
+.opt:hover:not(:disabled){border-color:var(--main)}
+.opt.big{font-family:Jua; font-size:20px; text-align:center}
+.opt.ok{background:var(--ok-soft); border-color:var(--ok)}
+.opt.ng{background:var(--ng-soft); border-color:var(--ng); opacity:.7}
+.opt:disabled{cursor:default}
+
+.blank{display:inline-block; min-width:3.2em; border-bottom:3px solid var(--muted); text-align:center; color:transparent; margin:0 2px; line-height:1.3}
+.blank.active{border-color:var(--main); background:var(--accent); border-radius:6px 6px 0 0; animation:pulse 1.2s infinite}
+.blank.filled{color:var(--ok); border-color:var(--ok); font-weight:700}
+.blank.reveal{color:var(--ng); border-color:var(--ng); font-weight:700}
+@keyframes pulse{50%{background:#fff3b0}}
+
+.answer-area{min-height:120px; background:var(--main-soft); border-radius:14px; padding:12px; display:flex; flex-wrap:wrap; gap:6px; align-content:flex-start; margin-top:12px}
+.answer-area:empty::before{content:"아래 조각을 순서대로 눌러 보세요"; color:var(--muted); font-size:15px}
+.pieces{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+.piece{background:var(--paper); border:2px solid var(--line); border-radius:12px; padding:8px 12px; font-size:17px; box-shadow:0 2px 0 rgba(0,0,0,.06)}
+.piece.placed{background:var(--paper); border-color:var(--ok); color:var(--ok); font-weight:700; padding:6px 10px; font-size:16px}
+.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+.match-refs{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px}
+.match-ref{font-family:Jua; font-size:17px; padding:8px 14px; border-radius:12px; background:var(--paper); border:2px solid var(--line)}
+.match-ref.sel{background:var(--accent); border-color:var(--main)}
+.match-ref.done, .match-txt.done{background:var(--ok-soft); border-color:var(--ok); opacity:.55; pointer-events:none}
+.match-txt{display:block; width:100%; text-align:left; background:var(--paper); border:2px solid var(--line); border-radius:14px; padding:10px 14px; font-size:15.5px; margin-bottom:8px; word-break:keep-all}
+.match-txt .got{font-family:Jua; color:var(--ok); margin-right:6px}
+
+.flash{min-height:220px; display:flex; flex-direction:column; justify-content:center; text-align:center}
+.flash .verse{text-align:center}
+.hidden-txt{color:var(--muted); font-size:15px}
+.seg{display:inline-flex; background:var(--main-soft); border-radius:12px; padding:4px; gap:4px; margin:12px auto 0}
+.seg button{padding:6px 12px; border-radius:9px; font-size:14px}
+.seg button.on{background:var(--paper); box-shadow:var(--shadow); font-weight:700}
+
+.feedback{margin-top:14px; padding:12px 14px; border-radius:14px; font-size:15.5px; display:none}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok-soft)}
+.feedback.ng{background:var(--ng-soft)}
+.feedback b{font-family:Jua; font-weight:400; font-size:18px}
+.next{display:block; width:100%; margin-top:14px; padding:14px; border-radius:14px; background:var(--main); color:#fff; font-family:Jua; font-size:20px; box-shadow:var(--shadow)}
+.next:disabled{opacity:.35}
+.row{display:flex; gap:8px}
+.row > *{flex:1}
+.ghost{background:var(--paper); color:var(--main); border:2px solid var(--main)}
+
+.result{text-align:center}
+.result .big{font-family:Jua; font-size:56px; color:var(--main); line-height:1.1; margin:8px 0}
+.stars{font-size:36px; letter-spacing:4px}
+.miss{text-align:left; border-top:1px dashed var(--line); padding:10px 0}
+.miss .r{font-family:Jua; color:var(--main)}
+.combo{position:fixed; left:50%; top:30%; transform:translate(-50%,-50%); font-family:Jua; font-size:40px; color:var(--main); pointer-events:none; opacity:0}
+.combo.go{animation:pop .8s}
+@keyframes pop{0%{opacity:0; transform:translate(-50%,-30%) scale(.6)}30%{opacity:1; transform:translate(-50%,-50%) scale(1.1)}100%{opacity:0; transform:translate(-50%,-80%) scale(1)}}
+
+.list .item{border-top:1px dashed var(--line); padding:10px 0; word-break:keep-all}
+.list .item:first-child{border-top:0}
+.list .r{font-family:Jua; color:var(--main)}
+.list .dot{display:inline-block; width:10px; height:10px; border-radius:50%; margin-left:6px; background:var(--line); vertical-align:middle}
+.list .dot.good{background:var(--ok)} .list .dot.bad{background:var(--ng)}
+footer{margin-top:28px; text-align:center; color:var(--muted); font-size:13px}
+.linkbtn{color:var(--main); text-decoration:underline; font-size:14px}
+@media (max-width:480px){ .opts.two{grid-template-columns:1fr} .card{padding:16px 14px} }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="combo" id="combo"></div>
+
+<script>
+// TJCKIDS 북부연합 암송찬양한마당 — 고학년 30구절 (기본신앙 1~10)
+// [번호, 구분, 성경, 장:절, 본문]
+const VERSES = [
+  [1, "하나님", "사도행전", "4:12", "다른 이로서는 구원을 얻을 수 없나니 천하 인간에 구원을 얻을만한 다른 이름을 우리에게 주신 일이 없음이니라 하였더라"],
+  [2, "하나님", "요한복음", "1:14", "말씀이 육신이 되어 우리 가운데 거하시매 우리가 그 영광을 보니 아버지의 독생자의 영광이요 은혜와 진리가 충만하더라"],
+  [3, "하나님", "마태복음", "20:28", "인자가 온 것은 섬김을 받으려 함이 아니라 도리어 섬기려 하고 자기 목숨을 많은 사람의 대속물로 주려 함이니라"],
+  [4, "성경", "디모데후서", "3:16", "모든 성경은 하나님의 감동으로 된 것으로 교훈과 책망과 바르게 함과 의로 교육하기에 유익하니"],
+  [5, "성경", "마태복음", "5:18", "진실로 너희에게 이르노니 천지가 없어지기 전에는 율법의 일점 일획이라도 반드시 없어지지 아니하고 다 이루리라"],
+  [6, "성경", "베드로후서", "1:21", "예언은 언제든지 사람의 뜻으로 낸 것이 아니요 오직 성령의 감동하심을 입은 사람들이 하나님께 받아 말한 것임이니라"],
+  [7, "교회", "사도행전", "20:28", "너희는 자기를 위하여 또는 온 양떼를 위하여 삼가라 성령이 저들 가운데 너희로 감독자를 삼고 하나님이 자기 피로 사신 교회를 치게 하셨느니라"],
+  [8, "교회", "디모데전서", "3:15", "만일 내가 지체하면 너로 하나님의 집에서 어떻게 행하여야 할 것을 알게 하려 함이니 이 집은 살아 계신 하나님의 교회요 진리의 기둥과 터이니라"],
+  [9, "교회", "이사야", "2:2", "말일에 여호와의 전의 산이 모든 산 꼭대기에 굳게 설 것이요 모든 작은 산 위에 뛰어나리니 만방이 그리로 모여 들 것이라"],
+  [10, "세례", "로마서", "6:3", "무릇 그리스도 예수와 합하여 세례를 받은 우리는 그의 죽으심과 합하여 세례 받은 줄을 알지 못하느뇨"],
+  [11, "세례", "베드로전서", "3:21", "물은 예수 그리스도의 부활하심으로 말미암아 이제 너희를 구원하는 표니 곧 세례라 육체의 더러운 것을 제하여 버림이 아니요 오직 선한 양심이 하나님을 향하여 찾아가는 것이라"],
+  [12, "세례", "디도서", "3:5", "우리를 구원하시되 우리의 행한바 의로운 행위로 말미암지 아니하고 오직 그의 긍휼하심을 좇아 중생의 씻음과 성령의 새롭게 하심으로 하셨나니"],
+  [13, "성령", "에베소서", "1:13", "그 안에서 너희도 진리의 말씀 곧 너희의 구원의 복음을 듣고 그 안에서 또한 믿어 약속의 성령으로 인치심을 받았으니"],
+  [14, "성령", "고린도전서", "14:2", "방언을 말하는 자는 사람에게 하지 아니하고 하나님께 하나니 이는 알아 듣는 자가 없고 그 영으로 비밀을 말함이니라"],
+  [15, "성령", "로마서", "8:16", "성령이 친히 우리 영으로 더불어 우리가 하나님의 자녀인 것을 증거하시나니"],
+  [16, "세족례", "요한복음", "13:8", "베드로가 가로되 내 발을 절대로 씻기지 못하시리이다 예수께서 대답하시되 내가 너를 씻기지 아니하면 네가 나와 상관이 없느니라"],
+  [17, "세족례", "요한복음", "13:15", "내가 너희에게 행한 것같이 너희도 행하게 하려하여 본을 보였노라"],
+  [18, "세족례", "요한복음", "13:10", "예수께서 가라사대 이미 목욕한 자는 발 밖에 씻을 필요가 없느니라 온 몸이 깨끗하니라 너희가 깨끗하나 다는 아니니라 하시니"],
+  [19, "성찬례", "요한복음", "6:54", "내 살을 먹고 내 피를 마시는 자는 영생을 가졌고 마지막 날에 내가 그를 다시 살리리니"],
+  [20, "성찬례", "누가복음", "22:19", "또 떡을 가져 사례하시고 떼어 저희에게 주시며 가라사대 이것은 너희를 위하여 주는 내 몸이라 너희가 이를 행하여 나를 기념하라 하시고"],
+  [21, "성찬례", "고린도전서", "11:26", "너희가 이 떡을 먹으며 이 잔을 마실 때마다 주의 죽으심을 오실 때까지 전하는 것이니라"],
+  [22, "안식일", "창세기", "2:3", "하나님이 일곱째 날을 복 주사 거룩하게 하셨으니 이는 하나님이 그 창조하시며 만드시던 모든 일을 마치시고 이 날에 안식하셨음이더라"],
+  [23, "안식일", "출애굽기", "31:13", "너는 이스라엘 자손에게 고하여 이르기를 너희는 나의 안식일을 지키라 이는 나와 너희 사이에 너희 대대의 표징이니 나는 너희를 거룩하게 하는 여호와인 줄 너희로 알게 함이라"],
+  [24, "안식일", "이사야", "58:13", "만일 안식일에 네 발을 금하여 내 성일에 오락을 행치 아니하고 안식일을 일컬어 즐거운 날이라 여호와의 성일을 존귀한 날이라 하여 이를 존귀히 여기고 네 길로 행치 아니하며 네 오락을 구치 아니하며 사사로운 말을 하지 아니하면"],
+  [25, "구원", "에베소서", "2:8", "너희가 그 은혜를 인하여 믿음으로 말미암아 구원을 얻었나니 이것이 너희에게서 난 것이 아니요 하나님의 선물이라"],
+  [26, "구원", "마태복음", "7:21", "나더러 주여 주여 하는 자마다 천국에 다 들어갈 것이 아니요 다만 하늘에 계신 내 아버지의 뜻대로 행하는 자라야 들어가리라"],
+  [27, "구원", "요한복음", "14:6", "예수께서 가라사대 내가 곧 길이요 진리요 생명이니 나로 말미암지 않고는 아버지께로 올 자가 없느니라"],
+  [28, "재림", "요한계시록", "22:20", "이것들을 증거하신 이가 가라사대 내가 진실로 속히 오리라 하시거늘 아멘 주 예수여 오시옵소서"],
+  [29, "재림", "사도행전", "1:11", "가로되 갈릴리 사람들아 어찌하여 서서 하늘을 쳐다 보느냐 너희 가운데서 하늘로 올리우신 이 예수는 하늘로 가심을 본 그대로 오시리라 하였느니라"],
+  [30, "재림", "요한계시록", "22:12", "보라 내가 속히 오리니 내가 줄 상이 내게 있어 각 사람에게 그의 일한 대로 갚아 주리라"],
+].map(([n, cat, book, cv, text]) => ({ n, cat, book, cv, ref: `${book} ${cv}`, text }));
+
+// 학년별 구절 목록 (고학년 번호 기준). 저학년 20구절은 고학년 30구절 중 아래 번호와 본문이 같다.
+const GRADES = {
+  high: { label: "고학년", count: 30, nums: VERSES.map(v => v.n) },
+  low:  { label: "저학년", count: 20, nums: [1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23, 25, 26, 28, 29] },
+};
+</script>
+<script>
+/* ---------- 상태 ---------- */
+const $app = document.getElementById('app');
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+let user = store.get('tj-user', '');   // 현재 이름
+let grade = store.get('tj-grade', 'high');
+let scope = 'all';
+let list = [];           // 현재 학년의 구절 (no: 학년별 번호)
+let stats = {};          // {고학년번호: {ok, ng}}
+let wrong = {};          // {고학년번호: true}
+
+const ukey = (what, g = grade) => `tj-u-${user}-${what}-${g}`;
+function loadGrade(){
+  list = GRADES[grade].nums.map((n, i) => ({ ...VERSES[n - 1], no: i + 1 }));
+  stats = store.get(ukey('stats'), {});
+  wrong = store.get(ukey('wrong'), {});
+  document.body.classList.toggle('low', grade === 'low');
+}
+function save(){ store.set(ukey('stats'), stats); store.set(ukey('wrong'), wrong); }
+function logRound(mode, score, total, missed){
+  const h = store.get(`tj-u-${user}-hist`, []);
+  h.unshift({ t: Date.now(), grade, mode, score, total, miss: missed.map(v => v.n) });
+  store.set(`tj-u-${user}-hist`, h.slice(0, 200));
+}
+const modeName = id => (MODES.find(m => m.id === id) || {}).name || id;
+const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+/* ---------- 이름 입력 ---------- */
+function login(){
+  document.body.classList.toggle('low', grade === 'low');
+  const users = store.get('tj-users', []);
+  $app.innerHTML = `
+    <header><div class="logo">BIBLE</div><div><h1>암송구절 퀴즈</h1><p>TJCKIDS 북부연합 암송찬양한마당 · 기본신앙 1~10</p></div></header>
+    <div class="card">
+      <h2 style="margin:0 0 6px">이름을 입력해 주세요 🙋</h2>
+      <p class="prompt">이름별로 맞힌 구절·틀린 구절이 쌓여요. 다음에도 같은 이름으로 들어오면 이어서 볼 수 있어요.</p>
+      <form id="nf" class="row" style="margin-top:8px">
+        <input id="nm" maxlength="12" placeholder="예: 채건후" autocomplete="off"
+          style="flex:2; font:inherit; font-size:20px; padding:12px 14px; border-radius:14px; border:2px solid var(--line); background:var(--paper); color:var(--ink)">
+        <button class="next" style="margin:0; flex:1">시작 ▶</button>
+      </form>
+      ${users.length ? `<div class="label">이 기기에서 했던 이름</div><div class="chips">${users.map(u => `<button class="chip" data-u="${esc(u)}">${esc(u)}</button>`).join('')}</div>` : ''}
+      <p class="prompt" style="margin-top:16px">※ 기록은 지금 쓰는 이 휴대폰/컴퓨터에 저장돼요.</p>
+    </div>`;
+  const enter = name => {
+    name = name.trim().replace(/\s+/g, ' ');
+    if (!name) return document.getElementById('nm').focus();
+    user = name; store.set('tj-user', user);
+    if (!users.includes(name)) store.set('tj-users', [name, ...users]);
+    home();
+  };
+  document.getElementById('nf').onsubmit = e => { e.preventDefault(); enter(document.getElementById('nm').value); };
+  $app.querySelectorAll('[data-u]').forEach(b => b.onclick = () => enter(b.dataset.u));
+  document.getElementById('nm').focus();
+}
+
+/* ---------- 내 기록 ---------- */
+function myRecord(){
+  loadGrade();
+  const rows = list.map(v => ({ v, s: stats[v.n] || { ok: 0, ng: 0 } }));
+  const missed = rows.filter(r => r.s.ng > 0).sort((a, b) => b.s.ng - a.s.ng || a.v.no - b.v.no);
+  const never = rows.filter(r => !r.s.ok && !r.s.ng);
+  const hist = store.get(`tj-u-${user}-hist`, []).filter(h => h.grade === grade);
+  const totOk = rows.reduce((a, r) => a + r.s.ok, 0), totNg = rows.reduce((a, r) => a + r.s.ng, 0);
+  const d = t => { const x = new Date(t); return `${x.getMonth() + 1}/${x.getDate()} ${String(x.getHours()).padStart(2, '0')}:${String(x.getMinutes()).padStart(2, '0')}`; };
+  $app.innerHTML = `
+    <div class="top"><button class="back" id="back">← 처음</button><h2 style="margin:0; flex:1">${esc(user)}의 기록 · ${GRADES[grade].label}</h2></div>
+    <div class="card" style="display:grid; grid-template-columns:repeat(3,1fr); text-align:center; gap:8px">
+      <div><div class="jua" style="font-size:30px; color:var(--ok)">${totOk}</div><div class="prompt" style="margin:0">맞힌 횟수</div></div>
+      <div><div class="jua" style="font-size:30px; color:var(--ng)">${totNg}</div><div class="prompt" style="margin:0">틀린 횟수</div></div>
+      <div><div class="jua" style="font-size:30px; color:var(--main)">${list.length - never.length}/${list.length}</div><div class="prompt" style="margin:0">풀어 본 구절</div></div>
+    </div>
+    <div class="label">❗ 틀린 적 있는 구절 (많이 틀린 순)</div>
+    <div class="card list">
+      ${missed.length ? missed.map(({ v, s }) => `<div class="item"><span class="r">${v.no}. ${v.ref}</span> <span class="tag">${v.cat}</span>
+        <span style="float:right; font-size:14px"><b style="color:var(--ng)">✗ ${s.ng}</b> · <b style="color:var(--ok)">○ ${s.ok}</b>${wrong[v.n] ? '' : ' · 복습완료 ✅'}</span><div>${v.text}</div></div>`).join('')
+        : '<p class="prompt" style="margin:0">아직 틀린 구절이 없어요 👍</p>'}
+    </div>
+    ${missed.some(r => wrong[r.v.n]) ? '<button class="next" id="drill">❗ 틀린 구절만 다시 연습하기</button>' : ''}
+    <div class="label">📅 지난 퀴즈</div>
+    <div class="card list">
+      ${hist.length ? hist.slice(0, 30).map(h => `<div class="item"><span class="r">${modeName(h.mode)}</span> <span style="font-size:14px; color:var(--muted)">${d(h.t)}</span>
+        <span style="float:right"><b>${h.mode === 'match' ? `틀림 ${h.total - h.score}번` : `${h.score} / ${h.total}`}</b></span>
+        ${h.miss.length ? `<div style="font-size:14px; color:var(--muted)">틀린 구절: ${h.miss.map(n => VERSES[n - 1].ref).join(', ')}</div>` : ''}</div>`).join('')
+        : '<p class="prompt" style="margin:0">아직 푼 퀴즈가 없어요.</p>'}
+    </div>`;
+  document.getElementById('back').onclick = home;
+  const dr = document.getElementById('drill');
+  if (dr) dr.onclick = () => { scope = 'wrong'; home(); };
+  window.scrollTo(0, 0);
+}
+function record(v, ok){
+  const s = stats[v.n] || (stats[v.n] = { ok: 0, ng: 0 });
+  ok ? s.ok++ : s.ng++;
+  if (!ok) wrong[v.n] = true;
+  else if (scope === 'wrong') delete wrong[v.n];
+  save();
+}
+
+/* ---------- 도우미 ---------- */
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = (a, n) => shuffle(a).slice(0, n);
+const clean = w => w.replace(/[,.…()]/g, '');
+const cats = () => [...new Set(list.map(v => v.cat))];
+function pool(){
+  if (scope === 'all') return list;
+  if (scope === 'wrong') return list.filter(v => wrong[v.n]);
+  return list.filter(v => v.cat === scope);
+}
+function el(html){ const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+function combo(text){ const c = document.getElementById('combo'); c.textContent = text; c.classList.remove('go'); void c.offsetWidth; c.classList.add('go'); }
+
+/* ---------- 홈 ---------- */
+const MODES = [
+  { id: 'flash', ic: '📖', name: '암송 카드', desc: '가리고 외워 보기 · 첫 글자 힌트' },
+  { id: 'blank', ic: '✏️', name: '빈칸 채우기', desc: '빠진 낱말을 골라 넣기' },
+  { id: 'mcq',   ic: '🔤', name: '4지선다', desc: '말씀 ↔ 성경 장절 고르기' },
+  { id: 'match', ic: '🧩', name: '짝 맞추기', desc: '장절과 말씀을 짝지어 연결' },
+  { id: 'order', ic: '🔀', name: '순서 맞추기', desc: '섞인 말씀 조각을 순서대로' },
+];
+
+function home(){
+  if (!user) return login();
+  loadGrade();
+  const done = list.filter(v => (stats[v.n]?.ok || 0) > 0).length;
+  const wrongN = list.filter(v => wrong[v.n]).length;
+  if (scope === 'wrong' && !wrongN) scope = 'all';
+  if (scope !== 'all' && scope !== 'wrong' && !cats().includes(scope)) scope = 'all';
+  $app.innerHTML = `
+    <header>
+      <div class="logo">BIBLE</div>
+      <div style="flex:1"><h1>암송구절 퀴즈</h1><p>TJCKIDS 북부연합 암송찬양한마당 · 기본신앙 1~10</p></div>
+    </header>
+    <div class="row" style="margin-bottom:12px; align-items:center">
+      <div class="jua" style="font-size:20px; flex:2">🙋 ${esc(user)} <button class="linkbtn" id="chg" style="font-family:'Gowun Dodum'">이름 바꾸기</button></div>
+      <button class="next" id="mine" style="margin:0; padding:10px; font-size:17px">📊 내 기록</button>
+    </div>
+    <div class="grade">
+      ${Object.entries(GRADES).map(([k, g]) => `<button data-g="${k}" class="${k === grade ? 'on' : ''}">${g.label}<small>${g.count}구절</small></button>`).join('')}
+    </div>
+    <div class="card">
+      <div class="progress"><span>한 번이라도 맞힌 구절</span><div class="bar"><i style="width:${done / list.length * 100}%"></i></div><b>${done}/${list.length}</b></div>
+    </div>
+    <div class="label">복습할 범위</div>
+    <div class="chips" id="scope">
+      <button class="chip ${scope === 'all' ? 'on' : ''}" data-s="all">전체<span class="n">${list.length}</span></button>
+      ${cats().map(c => `<button class="chip ${scope === c ? 'on' : ''}" data-s="${c}">${c}<span class="n">${list.filter(v => v.cat === c).length}</span></button>`).join('')}
+      ${wrongN ? `<button class="chip ${scope === 'wrong' ? 'on' : ''}" data-s="wrong">❗ 틀린 구절<span class="n">${wrongN}</span></button>` : ''}
+    </div>
+    <div class="label">게임 고르기</div>
+    <div class="modes">
+      ${MODES.map(m => `<button class="mode" data-m="${m.id}"><div class="ic">${m.ic}</div><h3>${m.name}</h3><p>${m.desc}</p></button>`).join('')}
+    </div>
+    <div class="label">구절 목록 <span style="font-weight:400">(● 초록: 맞힘 · 빨강: 틀린 적 있음)</span></div>
+    <div class="card list">
+      ${pool().map(v => {
+        const s = stats[v.n]; const cls = wrong[v.n] ? 'bad' : (s?.ok ? 'good' : '');
+        return `<div class="item"><span class="r">${v.no}. ${v.ref}</span> <span class="tag">${v.cat}</span><span class="dot ${cls}"></span><div>${v.text}</div></div>`;
+      }).join('')}
+    </div>
+    <footer>
+      하나님의 말씀과 기도로 거룩하여짐이니라 (디모데전서 4:5)<br>
+      <button class="linkbtn" id="reset">${esc(user)}의 ${GRADES[grade].label} 기록 지우기</button>
+    </footer>`;
+  document.getElementById('chg').onclick = () => { user = ''; store.set('tj-user', ''); scope = 'all'; login(); };
+  document.getElementById('mine').onclick = myRecord;
+  $app.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { grade = b.dataset.g; store.set('tj-grade', grade); scope = 'all'; home(); });
+  $app.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { scope = b.dataset.s; home(); });
+  $app.querySelectorAll('[data-m]').forEach(b => b.onclick = () => start(b.dataset.m));
+  document.getElementById('reset').onclick = () => {
+    if (confirm(`${user}의 ${GRADES[grade].label} 맞힌/틀린 기록을 모두 지울까요?`)) {
+      stats = {}; wrong = {}; save();
+      store.set(`tj-u-${user}-hist`, store.get(`tj-u-${user}-hist`, []).filter(h => h.grade !== grade));
+      home();
+    }
+  };
+  window.scrollTo(0, 0);
+}
+
+/* ---------- 게임 진행 ---------- */
+let G = null; // {mode, qs, i, score, streak, misses:[]}
+const ROUND = 10;
+
+function start(mode){
+  const p = pool();
+  if (!p.length) return;
+  if (mode === 'flash') return flash(p);
+  if (mode === 'match') return matchGame(p);
+  G = { mode, qs: shuffle(p).slice(0, Math.min(ROUND, p.length)), i: 0, score: 0, streak: 0, misses: [] };
+  if (G.qs.length < ROUND && p.length < ROUND) { /* 범위가 작으면 그대로 */ }
+  question();
+}
+
+function frame(title){
+  const total = G.qs.length;
+  $app.innerHTML = `
+    <div class="top">
+      <button class="back" id="back">← 처음</button>
+      <div class="bar"><i style="width:${G.i / total * 100}%"></i></div>
+      <div class="score">⭐ ${G.score}</div>
+    </div>
+    <div class="card" id="q">
+      <div class="qhead"><span>${title} · ${G.i + 1} / ${total}</span><span class="tag" id="cat"></span></div>
+      <div id="body"></div>
+      <div class="feedback" id="fb"></div>
+      <button class="next" id="next" style="display:none">다음 ▶</button>
+    </div>`;
+  document.getElementById('back').onclick = home;
+  window.scrollTo(0, 0);
+  return document.getElementById('body');
+}
+
+function finishQ(v, ok){
+  record(v, ok);
+  if (ok){ G.score++; G.streak++; if (G.streak >= 3) combo(`${G.streak}연속 정답! 🔥`); }
+  else { G.streak = 0; G.misses.push(v); }
+  const fb = document.getElementById('fb');
+  fb.className = 'feedback show ' + (ok ? 'ok' : 'ng');
+  fb.innerHTML = `<b>${ok ? '정답이에요! 🎉' : '아쉬워요 😢'}</b><br><span class="jua" style="color:var(--main)">${v.ref}</span> · ${v.cat}<br>${v.text}`;
+  const nx = document.getElementById('next');
+  nx.style.display = 'block';
+  nx.textContent = G.i + 1 < G.qs.length ? '다음 ▶' : '결과 보기 🏁';
+  nx.onclick = () => { G.i++; G.i < G.qs.length ? question() : result(); };
+  nx.focus({ preventScroll: true });
+}
+
+function question(){
+  const v = G.qs[G.i];
+  ({ blank: qBlank, mcq: qMcq, order: qOrder })[G.mode](v);
+}
+
+/* 4지선다 — 방향을 섞어서 */
+function qMcq(v){
+  const body = frame('4지선다');
+  const toRef = Math.random() < 0.5;
+  // 오답: 같은 책/같은 주제를 우선 섞어 헷갈리게
+  const others = list.filter(x => x.n !== v.n);
+  const near = shuffle(others.filter(x => x.book === v.book || x.cat === v.cat));
+  const far = shuffle(others.filter(x => !near.includes(x)));
+  const opts = shuffle([v, ...[...near.slice(0, 2), ...far].slice(0, 3)]);
+  if (toRef){
+    body.innerHTML = `<p class="prompt">이 말씀은 어느 성경 구절일까요?</p><div class="verse">${v.text}</div>
+      <div class="opts two">${opts.map(o => `<button class="opt big" data-n="${o.n}">${o.ref}</button>`).join('')}</div>`;
+  } else {
+    body.innerHTML = `<p class="prompt">이 구절의 말씀은 무엇일까요?</p><div class="ref">${v.ref}</div>
+      <div class="opts">${opts.map(o => `<button class="opt" data-n="${o.n}">${o.text}</button>`).join('')}</div>`;
+  }
+  oneShot(body, v, b => +b.dataset.n === v.n);
+}
+
+function oneShot(body, v, isRight){
+  const btns = [...body.querySelectorAll('.opt')];
+  btns.forEach(b => b.onclick = () => {
+    const ok = isRight(b);
+    btns.forEach(x => { x.disabled = true; if (isRight(x)) x.classList.add('ok'); });
+    if (!ok) b.classList.add('ng');
+    finishQ(v, ok);
+  });
+}
+
+/* 빈칸 채우기 */
+const wordBank = (() => {
+  const s = new Set();
+  VERSES.forEach(v => v.text.split(' ').forEach(w => { w = clean(w); if (w.length >= 2) s.add(w); }));
+  return [...s];
+})();
+let blankLevel = store.get('tj-blank2', 0);   // 0 = 랜덤 (문제마다 빈칸 개수가 달라짐)
+const BLANK_LEVELS = [[0, '🎲 랜덤'], [1, '쉬움'], [3, '보통'], [5, '어려움']];
+
+function qBlank(v){
+  const body = frame('빈칸 채우기');
+  document.getElementById('cat').textContent = v.cat;
+  const words = v.text.split(' ');
+  const cand = words.map((w, i) => i).filter(i => clean(words[i]).length >= 2);
+  const want = blankLevel || 1 + (Math.random() * Math.min(5, Math.ceil(cand.length / 4)) | 0);
+  const k = Math.min(want, cand.length);
+  const blanks = pick(cand, k).sort((a, b) => a - b);
+  let cur = 0, missed = false;
+  body.innerHTML = `
+    <p class="prompt">빈칸에 들어갈 낱말을 골라요.
+      <span class="seg" id="lv" style="margin:0 0 0 6px; vertical-align:middle">${BLANK_LEVELS.map(([n, t]) => `<button data-l="${n}" class="${n === blankLevel ? 'on' : ''}">${t}</button>`).join('')}</span></p>
+    <div class="ref" style="font-size:22px">${v.ref}</div>
+    <div class="verse">${words.map((w, i) => blanks.includes(i) ? `<span class="blank" data-i="${i}">${clean(w)}</span>${w.slice(clean(w).length)}` : w).join(' ')}</div>
+    <div class="opts two" id="opts"></div>`;
+  body.querySelectorAll('[data-l]').forEach(b => b.onclick = () => { blankLevel = +b.dataset.l; store.set('tj-blank2', blankLevel); qBlank(v); });
+  function step(){
+    body.querySelectorAll('.blank').forEach(b => b.classList.remove('active'));
+    if (cur >= blanks.length) { document.getElementById('opts').innerHTML = ''; return finishQ(v, !missed); }
+    const span = body.querySelector(`.blank[data-i="${blanks[cur]}"]`);
+    span.classList.add('active');
+    const ans = clean(words[blanks[cur]]);
+    const sameLen = wordBank.filter(w => w !== ans && Math.abs(w.length - ans.length) <= 1 && !v.text.includes(w));
+    const opts = shuffle([ans, ...pick(sameLen.length >= 3 ? sameLen : wordBank.filter(w => w !== ans), 3)]);
+    const box = document.getElementById('opts');
+    box.innerHTML = opts.map(o => `<button class="opt big">${o}</button>`).join('');
+    let tries = 0;
+    box.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+      if (b.textContent === ans){
+        span.classList.add(tries ? 'reveal' : 'filled'); cur++; step();
+      } else {
+        missed = true; tries++; b.classList.add('ng', 'shake'); b.disabled = true;
+        if (tries >= 2){ span.classList.add('reveal'); cur++; setTimeout(step, 500); }
+      }
+    });
+  }
+  step();
+}
+
+/* 순서 맞추기 */
+function qOrder(v){
+  const body = frame('순서 맞추기');
+  document.getElementById('cat').textContent = v.cat;
+  const words = v.text.split(' ');
+  const size = Math.max(2, Math.ceil(words.length / 6));
+  const chunks = [];
+  for (let i = 0; i < words.length; i += size) chunks.push(words.slice(i, i + size).join(' '));
+  let order = shuffle(chunks.map((c, i) => i));
+  if (order.every((x, i) => x === i)) order.reverse();
+  let cur = 0, missed = 0;
+  body.innerHTML = `<p class="prompt">말씀 조각을 순서대로 눌러 완성해요.</p><div class="ref" style="font-size:22px">${v.ref}</div>
+    <div class="answer-area" id="ans"></div><div class="pieces" id="pcs">${order.map(i => `<button class="piece" data-i="${i}">${chunks[i]}</button>`).join('')}</div>`;
+  const ans = document.getElementById('ans');
+  body.querySelectorAll('.piece').forEach(b => b.onclick = () => {
+    if (b.textContent === chunks[cur]){
+      ans.appendChild(el(`<span class="piece placed">${chunks[cur]}</span>`));
+      b.remove(); cur++;
+      if (cur === chunks.length) finishQ(v, missed === 0);
+    } else {
+      missed++; b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
+    }
+  });
+}
+
+/* 짝 맞추기 */
+function matchGame(p){
+  const items = shuffle(p.length >= 4 ? p : [...p, ...shuffle(list.filter(x => !p.includes(x)))]).slice(0, 5);
+  let sel = null, done = 0, misses = 0; const missSet = new Set();
+  const refs = shuffle(items), txts = shuffle(items);
+  $app.innerHTML = `
+    <div class="top"><button class="back" id="back">← 처음</button><div class="bar"><i id="mbar" style="width:0"></i></div><div class="score" id="msc">❌ 0</div></div>
+    <div class="card">
+      <p class="prompt">① 위의 성경 장절을 누르고 ② 알맞은 말씀을 눌러 짝을 지어요.</p>
+      <div class="match-refs">${refs.map(v => `<button class="match-ref" data-n="${v.n}">${v.ref}</button>`).join('')}</div>
+      ${txts.map(v => `<button class="match-txt" data-n="${v.n}">${v.text}</button>`).join('')}
+      <div class="feedback" id="fb"></div>
+      <div class="row" id="mnext" style="display:none"><button class="next ghost" id="again">한 판 더</button><button class="next" id="home2">처음으로</button></div>
+    </div>`;
+  document.getElementById('back').onclick = home;
+  const refBtns = $app.querySelectorAll('.match-ref');
+  refBtns.forEach(b => b.onclick = () => { refBtns.forEach(x => x.classList.remove('sel')); b.classList.add('sel'); sel = +b.dataset.n; });
+  $app.querySelectorAll('.match-txt').forEach(b => b.onclick = () => {
+    if (sel == null){ refBtns.forEach(x => { x.classList.remove('shake'); void x.offsetWidth; if (!x.classList.contains('done')) x.classList.add('shake'); }); return; }
+    const v = items.find(x => x.n === sel);
+    if (+b.dataset.n === sel){
+      const r = $app.querySelector(`.match-ref[data-n="${sel}"]`);
+      r.classList.remove('sel'); r.classList.add('done'); b.classList.add('done');
+      b.innerHTML = `<span class="got">${v.ref}</span>${v.text}`;
+      record(v, !missSet.has(v.n)); sel = null; done++;
+      document.getElementById('mbar').style.width = done / items.length * 100 + '%';
+      if (done === items.length){
+        logRound('match', items.length - missSet.size, items.length, items.filter(x => missSet.has(x.n)));
+        const fb = document.getElementById('fb');
+        fb.className = 'feedback show ' + (misses ? 'ng' : 'ok');
+        fb.innerHTML = `<b>${misses ? `완성! 틀린 횟수 ${misses}번` : '완벽해요! 한 번도 안 틀렸어요 🎉'}</b>`;
+        document.getElementById('mnext').style.display = 'flex';
+        document.getElementById('again').onclick = () => matchGame(p);
+        document.getElementById('home2').onclick = home;
+      }
+    } else {
+      misses++; missSet.add(sel); wrong[sel] = true; save();
+      document.getElementById('msc').textContent = '❌ ' + misses;
+      b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
+    }
+  });
+  window.scrollTo(0, 0);
+}
+
+/* 암송 카드 */
+function flash(p){
+  const deck = p.slice();
+  let i = 0, show = 0; // 0 가리기, 1 첫 글자, 2 전체
+  function render(){
+    const v = deck[i];
+    const hint = v.text.split(' ').map(w => w[0] + '○'.repeat(Math.max(0, clean(w).length - 1)) + w.slice(clean(w).length)).join(' ');
+    $app.innerHTML = `
+      <div class="top"><button class="back" id="back">← 처음</button><div class="bar"><i style="width:${(i + 1) / deck.length * 100}%"></i></div><div class="score">${i + 1}/${deck.length}</div></div>
+      <div class="card flash">
+        <div><span class="tag">${v.no}번 · ${v.cat}</span></div>
+        <div class="ref">${v.ref}</div>
+        <div class="verse" style="min-height:120px">${show === 2 ? v.text : show === 1 ? hint : '<span class="hidden-txt">입으로 먼저 외워 본 뒤 힌트나 정답을 확인해요 🙏</span>'}</div>
+        <div class="seg">${['가리기', '첫 글자 힌트', '정답 보기'].map((t, k) => `<button data-k="${k}" class="${k === show ? 'on' : ''}">${t}</button>`).join('')}</div>
+        <div class="row" style="margin-top:16px"><button class="next ghost" id="no">😅 아직 헷갈려요</button><button class="next" id="yes">😊 외웠어요</button></div>
+        <div class="row"><button class="opt big" id="prev" ${i ? '' : 'disabled'} style="margin-top:10px">◀ 이전</button><button class="opt big" id="skip" style="margin-top:10px">다음 ▶</button></div>
+      </div>`;
+    document.getElementById('back').onclick = home;
+    $app.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { show = +b.dataset.k; render(); });
+    const go = d => { i += d; show = 0; if (i >= deck.length) return home(); if (i < 0) i = 0; render(); };
+    document.getElementById('yes').onclick = () => { const s = stats[v.n] || (stats[v.n] = { ok: 0, ng: 0 }); s.ok++; delete wrong[v.n]; save(); go(1); };
+    document.getElementById('no').onclick = () => { wrong[v.n] = true; save(); go(1); };
+    document.getElementById('prev').onclick = () => go(-1);
+    document.getElementById('skip').onclick = () => go(1);
+  }
+  render();
+}
+
+/* 결과 */
+function result(){
+  const total = G.qs.length, pct = G.score / total;
+  const stars = pct === 1 ? 3 : pct >= .7 ? 2 : pct >= .4 ? 1 : 0;
+  const msg = pct === 1 ? '만점! 말씀을 마음에 새겼어요 👏' : pct >= .7 ? '아주 잘했어요! 조금만 더 💪' : '틀린 구절을 다시 복습해 봐요 📖';
+  const mode = G.mode;
+  logRound(mode, G.score, total, G.misses);
+  $app.innerHTML = `
+    <div class="card result">
+      <div class="stars">${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
+      <div class="big">${G.score} / ${total}</div>
+      <p>${msg}</p>
+      <div class="row"><button class="next ghost" id="again">한 번 더</button><button class="next" id="home2">처음으로</button></div>
+      ${G.misses.length ? `<div class="label" style="text-align:left">틀린 구절 (홈의 "❗ 틀린 구절"에서 다시 연습할 수 있어요)</div>
+        ${G.misses.map(v => `<div class="miss"><span class="r">${v.ref}</span> <span class="tag">${v.cat}</span><div>${v.text}</div></div>`).join('')}` : ''}
+    </div>`;
+  document.getElementById('again').onclick = () => start(mode);
+  document.getElementById('home2').onclick = home;
+  window.scrollTo(0, 0);
+}
+
+home();
+</script>
+</body>
+</html>
